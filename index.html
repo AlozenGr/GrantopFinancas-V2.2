@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GRANTOP • Finanças V3.0</title>
+
+  <!-- Favicon e logo -->
+  <link rel="icon" type="image/png" href="./logo.png" />
+
+  <!-- Tailwind CSS (CDN para testes) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .card{border:1px solid #1f2937;border-radius:14px;background:#0b1220;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+    .pill{border:1px solid #334155;border-radius:9999px;padding:.4rem .75rem;background:#0e1627}
+    .pill:hover{background:#1e293b}
+    .input{background:#0a0f1a;border:1px solid #334155;border-radius:.5rem;padding:.55rem .75rem;outline:none}
+    .input:focus{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.25)}
+    .btn{border-radius:.6rem;padding:.55rem .9rem;border:1px solid #334155;background:#0e1627}
+    .btn:hover{background:#0f1b33}
+    .btn-primary{border-color:#2563eb;background:#1d4ed8}
+    .btn-primary:hover{background:#1e40af}
+    .hide{display:none}
+    .table th,.table td{border-bottom:1px solid #1f2937;padding:.65rem}
+  </style>
+
+  <script src="./config.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-200">
+  <header class="p-4 md:p-6 bg-slate-900 shadow flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="./logo.png" alt="GRANTOP" class="h-8 w-auto" />
+      <div class="leading-tight">
+        <h1 class="text-xl md:text-2xl font-bold">GRANTOP</h1>
+        <div class="text-sky-300">• Finanças</div>
+      </div>
+    </div>
+    <nav class="flex items-center gap-2">
+      <a class="pill text-sm" href="#" id="btn-recarregar">Recarregar</a>
+      <a class="pill text-sm" href="#" id="btn-abrir-planilha">Abrir planilha</a>
+      <a class="pill text-sm" href="#" id="btn-sair-pin">Sair (PIN)</a>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 md:p-6">
+    <div class="flex flex-wrap items-center gap-2">
+      <button class="btn" id="btn-replicar-fixas">Replicar Fixas</button>
+      <button class="btn" id="btn-replicar-func">Replicar Funcionários</button>
+
+      <div class="relative ml-2">
+        <label class="text-xs block">Mês vigente</label>
+        <div class="flex gap-2 items-center">
+          <select id="mes-vigente" class="input">
+            <option selected>novembro de 2025</option>
+          </select>
+          <button class="btn" id="btn-aplicar-mes">Aplicar</button>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-replicar-cred">Replicar Créditos pendentes</button>
+      <button class="btn" id="btn-replicar-imp">Replicar Imp. Parcelados</button>
+
+      <div class="ml-auto flex gap-2">
+        <button class="btn" id="btn-gerar-resumo">Gerar<br/>Resumo<br/>(planilha)</button>
+      </div>
+    </div>
+
+    <section class="grid md:grid-cols-3 lg:grid-cols-6 gap-3 mt-5">
+      <div class="card p-3"><div class="text-slate-400 text-sm">Créditos (Total)</div><div class="text-xl font-semibold" id="kpi-creditos">R$ 0,00</div></div>
+      <div class="card p-3"><div class="text-slate-400 text-sm">Folha (Total)</div><div class="text-xl font-semibold" id="kpi-folha">R$ 0,00</div></div>
+      <div class="card p-3"><div class="text-slate-400 text-sm">Fixas Pendentes</div><div class="text-xl font-semibold" id="kpi-fixas">R$ 0,00</div></div>
+      <div class="card p-3"><div class="text-slate-400 text-sm">Saldo Previsto</div><div class="text-xl font-semibold" id="kpi-previsto">R$ 0,00</div></div>
+      <div class="card p-3"><div class="text-slate-400 text-sm">Valor a Receber</div><div class="text-xl font-semibold" id="kpi-receber">R$ 0,00</div></div>
+      <div class="card p-3"><div class="text-slate-400 text-sm">Valor Recebido</div><div class="text-xl font-semibold" id="kpi-recebido">R$ 0,00</div></div>
+    </section>
+
+    <div id="alerta-erro" class="mt-4 p-3 border border-rose-700 bg-rose-900/30 text-rose-200 rounded-md hide">
+      Falha ao conectar (ping). Verifique URL do Web App e permissão.
+    </div>
+
+    <!-- Abas -->
+    <div class="flex flex-wrap gap-2 mt-4">
+      <button class="pill" data-tab="tab-funcionarios">Funcionários</button>
+      <button class="pill" data-tab="tab-creditos">Créditos</button>
+      <button class="pill" data-tab="tab-contas-fixas">Contas Fixas</button>
+      <button class="pill" data-tab="tab-contas-empresa">Contas da Empresa</button>
+      <button class="pill" data-tab="tab-imp-parcelados">Impostos Parcelados</button>
+      <button class="pill" data-tab="tab-imp-mes">Imposto do Mês</button>
+      <button class="pill" data-tab="tab-clientes">Clientes</button>
+      <button class="pill" data-tab="tab-resumo">Resumo</button>
+    </div>
+
+    <section id="tab-funcionarios" class="mt-4">
+      <div class="card p-4">
+        <h2 class="text-lg font-semibold mb-3">Funcionários</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div><label class="text-sm text-slate-400">Funcionário</label><input id="f_nome" class="input w-full" /></div>
+          <div><label class="text-sm text-slate-400">Salário (R$)</label><input id="f_salario" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">% Adicional</label><input id="f_adic" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">Diárias (qtd)</label><input id="f_diarias" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">Valor da diária (R$)</label><input id="f_vdiaria" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">VT (R$)</label><input id="f_vt" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">VR (R$)</label><input id="f_vr" class="input w-full" type="number" value="0" /></div>
+          <div><label class="text-sm text-slate-400">Descontos (R$)</label><input id="f_desc" class="input w-full" type="number" value="0" /></div>
+        </div>
+        <div class="mt-3 text-slate-400 text-sm">
+          Total (prévia): <span id="f_total_prev" class="text-slate-100 font-semibold">R$ 0,00</span>
+        </div>
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-primary" id="btn-salvar-func">Salvar</button>
+          <button class="btn" id="btn-limpar-func">Limpar</button>
+        </div>
+
+        <div class="overflow-auto mt-5">
+          <table class="table w-full text-sm">
+            <thead class="text-slate-400"><tr><th>ID</th><th>Funcionário</th><th class="text-right">Salário</th><th class="text-right">VT</th><th class="text-right">VR</th><th class="text-right">Total</th><th class="text-right">Atualizado</th><th class="text-right">Ações</th></tr></thead>
+            <tbody id="tbody-func"><tr><td colspan="8" class="text-center text-slate-400">Sem funcionários.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function ping(){
+      try{
+        const r = await fetch(`${ENDPOINT}?action=ping&api_key=${API_KEY}`);
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error);
+        document.getElementById('alerta-erro').classList.add('hide');
+      }catch(e){
+        document.getElementById('alerta-erro').classList.remove('hide');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', ping);
+  </script>
+</body>
+</html>

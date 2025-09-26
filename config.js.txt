@@ -1,0 +1,4 @@
+// config.js
+// Substitua o ENDPOINT pela URL mais recente do seu Apps Script (implante como Web App e copie o link de /exec)
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbwk-iIJmaWziolXIT6JogjDTbUZG5iTjP6UNhvB7JZulr6feeUpSE72knupI7h4gtfO/exec';
+const API_KEY  = '2400';
