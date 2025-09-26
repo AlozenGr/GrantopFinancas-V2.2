@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GRANTOP • Finanças V3.0</title>
 
-  <!-- Favicon e logo -->
+  <!-- Favicon / Logo -->
   <link rel="icon" type="image/png" href="./logo.png" />
 
-  <!-- Tailwind CSS (CDN para testes) -->
+  <!-- Tailwind CDN (ok para testes; depois podemos migrar para build local) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
@@ -25,9 +25,14 @@
     .table th,.table td{border-bottom:1px solid #1f2937;padding:.65rem}
   </style>
 
-  <script src="./config.js"></script>
+  <script>
+    /* ====== CONFIG embutida (sem config.js) ====== */
+    const ENDPOINT = 'https://script.google.com/macros/s/AKfycbwk-iIJmaWziolXIT6JogjDTbUZG5iTjP6UNhvB7JZulr6feeUpSE72knupI7h4gtfO/exec';
+    const API_KEY  = '2400';
+  </script>
 </head>
 <body class="bg-slate-950 text-slate-200">
+  <!-- Header -->
   <header class="p-4 md:p-6 bg-slate-900 shadow flex items-center justify-between">
     <div class="flex items-center gap-3">
       <img src="./logo.png" alt="GRANTOP" class="h-8 w-auto" />
@@ -44,6 +49,7 @@
   </header>
 
   <main class="max-w-6xl mx-auto p-4 md:p-6">
+    <!-- Controles -->
     <div class="flex flex-wrap items-center gap-2">
       <button class="btn" id="btn-replicar-fixas">Replicar Fixas</button>
       <button class="btn" id="btn-replicar-func">Replicar Funcionários</button>
@@ -66,6 +72,7 @@
       </div>
     </div>
 
+    <!-- KPIs -->
     <section class="grid md:grid-cols-3 lg:grid-cols-6 gap-3 mt-5">
       <div class="card p-3"><div class="text-slate-400 text-sm">Créditos (Total)</div><div class="text-xl font-semibold" id="kpi-creditos">R$ 0,00</div></div>
       <div class="card p-3"><div class="text-slate-400 text-sm">Folha (Total)</div><div class="text-xl font-semibold" id="kpi-folha">R$ 0,00</div></div>
@@ -75,6 +82,7 @@
       <div class="card p-3"><div class="text-slate-400 text-sm">Valor Recebido</div><div class="text-xl font-semibold" id="kpi-recebido">R$ 0,00</div></div>
     </section>
 
+    <!-- Alerta -->
     <div id="alerta-erro" class="mt-4 p-3 border border-rose-700 bg-rose-900/30 text-rose-200 rounded-md hide">
       Falha ao conectar (ping). Verifique URL do Web App e permissão.
     </div>
@@ -91,9 +99,11 @@
       <button class="pill" data-tab="tab-resumo">Resumo</button>
     </div>
 
+    <!-- Funcionários -->
     <section id="tab-funcionarios" class="mt-4">
       <div class="card p-4">
         <h2 class="text-lg font-semibold mb-3">Funcionários</h2>
+
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div><label class="text-sm text-slate-400">Funcionário</label><input id="f_nome" class="input w-full" /></div>
           <div><label class="text-sm text-slate-400">Salário (R$)</label><input id="f_salario" class="input w-full" type="number" value="0" /></div>
@@ -104,9 +114,11 @@
           <div><label class="text-sm text-slate-400">VR (R$)</label><input id="f_vr" class="input w-full" type="number" value="0" /></div>
           <div><label class="text-sm text-slate-400">Descontos (R$)</label><input id="f_desc" class="input w-full" type="number" value="0" /></div>
         </div>
+
         <div class="mt-3 text-slate-400 text-sm">
           Total (prévia): <span id="f_total_prev" class="text-slate-100 font-semibold">R$ 0,00</span>
         </div>
+
         <div class="flex gap-2 mt-3">
           <button class="btn btn-primary" id="btn-salvar-func">Salvar</button>
           <button class="btn" id="btn-limpar-func">Limpar</button>
@@ -114,26 +126,189 @@
 
         <div class="overflow-auto mt-5">
           <table class="table w-full text-sm">
-            <thead class="text-slate-400"><tr><th>ID</th><th>Funcionário</th><th class="text-right">Salário</th><th class="text-right">VT</th><th class="text-right">VR</th><th class="text-right">Total</th><th class="text-right">Atualizado</th><th class="text-right">Ações</th></tr></thead>
-            <tbody id="tbody-func"><tr><td colspan="8" class="text-center text-slate-400">Sem funcionários.</td></tr></tbody>
+            <thead class="text-slate-400">
+              <tr>
+                <th class="text-left">ID</th>
+                <th class="text-left">Funcionário</th>
+                <th class="text-right">Salário</th>
+                <th class="text-right">VT</th>
+                <th class="text-right">VR</th>
+                <th class="text-right">Total</th>
+                <th class="text-right">Atualizado</th>
+                <th class="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-func">
+              <tr><td colspan="8" class="text-center text-slate-400">Sem funcionários.</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </section>
+
+    <!-- Placeholders das outras abas (para não quebrar layout) -->
+    <section id="tab-creditos" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Créditos</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-contas-fixas" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Contas Fixas</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-contas-empresa" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Contas da Empresa</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-imp-parcelados" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Impostos Parcelados</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-imp-mes" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Imposto do Mês</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-clientes" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Clientes</h2><div class="text-slate-400">Em breve…</div></div></section>
+    <section id="tab-resumo" class="mt-4 hide"><div class="card p-4"><h2 class="text-lg font-semibold">Resumo</h2><div class="text-slate-400">Em breve…</div></div></section>
   </main>
 
+  <!-- JS -->
   <script>
+    /* ===== Utils ===== */
+    function moedaBR(v){ if(isNaN(v)) v = 0; return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+    const qs = (s,r=document)=>r.querySelector(s);
+    const qsa=(s,r=document)=>Array.from(r.querySelectorAll(s));
+    function show(el){ el.classList.remove('hide'); }
+    function hide(el){ el.classList.add('hide'); }
+    function showFalha(msg){ const el=qs('#alerta-erro'); el.textContent=msg||'Falha ao conectar.'; show(el); }
+    function clearFalha(){ const el=qs('#alerta-erro'); if(el) hide(el); }
+
+    /* ===== API (Apps Script) ===== */
     async function ping(){
       try{
         const r = await fetch(`${ENDPOINT}?action=ping&api_key=${API_KEY}`);
         const data = await r.json();
-        if (!data.ok) throw new Error(data.error);
-        document.getElementById('alerta-erro').classList.add('hide');
-      }catch(e){
-        document.getElementById('alerta-erro').classList.remove('hide');
+        if (!data.ok) throw new Error(data.error||'Erro no ping');
+        clearFalha();
+        // se back mandar spreadsheetUrl, usamos no link "Abrir planilha"
+        if (data.spreadsheetUrl){
+          const a = qs('#btn-abrir-planilha');
+          a.onclick = (e)=>{ e.preventDefault(); window.open(data.spreadsheetUrl,'_blank'); };
+        }
+        return true;
+      }catch(err){
+        showFalha('Falha ao conectar (ping). Verifique URL do Web App e permissão.');
+        return false;
       }
     }
-    document.addEventListener('DOMContentLoaded', ping);
+
+    async function apiPost(payload){
+      try{
+        const r = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight no GAS
+          body: JSON.stringify({ api_key: API_KEY, ...payload })
+        });
+        const data = await r.json();
+        if (!data || data.ok === false) throw new Error((data && data.error) || 'Erro na API');
+        clearFalha();
+        return data;
+      }catch(err){
+        showFalha('Falha ao conectar (POST).');
+        return { ok:false, error:String(err) };
+      }
+    }
+
+    /* ===== Tabs ===== */
+    function initTabs(){
+      qsa('[data-tab]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const id = btn.getAttribute('data-tab');
+          qsa('main section[id^="tab-"]').forEach(sec=>hide(sec));
+          const sec = qs('#'+id); if(sec) show(sec);
+        });
+      });
+      show(qs('#tab-funcionarios')); // padrão
+    }
+
+    /* ===== Funcionários ===== */
+    function calcularPreviaFuncionario(){
+      const sal = parseFloat(qs('#f_salario').value || 0);
+      const perc = parseFloat(qs('#f_adic').value || 0) / 100;
+      const diarias = parseFloat(qs('#f_diarias').value || 0);
+      const vdiaria = parseFloat(qs('#f_vdiaria').value || 0);
+      const vt = parseFloat(qs('#f_vt').value || 0);
+      const vr = parseFloat(qs('#f_vr').value || 0);
+      const desc = parseFloat(qs('#f_desc').value || 0);
+      const total = sal + (sal * perc) + (diarias * vdiaria) - desc + vt + vr;
+      qs('#f_total_prev').textContent = moedaBR(total);
+    }
+    function bindCalculoPrevia(){
+      ['#f_salario','#f_adic','#f_diarias','#f_vdiaria','#f_vt','#f_vr','#f_desc'].forEach(id=>{
+        qs(id).addEventListener('input', calcularPreviaFuncionario);
+      });
+    }
+    function limparFormFuncionario(){
+      ['#f_nome','#f_salario','#f_adic','#f_diarias','#f_vdiaria','#f_vt','#f_vr','#f_desc'].forEach(id=>{
+        const el=qs(id); el.value=(id==='#f_nome')?'':'0';
+      });
+      calcularPreviaFuncionario();
+    }
+    async function salvarFuncionario(){
+      const payload = {
+        action:'salvar-funcionario',
+        nome: qs('#f_nome').value.trim(),
+        salario: parseFloat(qs('#f_salario').value||0),
+        adicional: parseFloat(qs('#f_adic').value||0),
+        diarias: parseFloat(qs('#f_diarias').value||0),
+        vdiaria: parseFloat(qs('#f_vdiaria').value||0),
+        vt: parseFloat(qs('#f_vt').value||0),
+        vr: parseFloat(qs('#f_vr').value||0),
+        descontos: parseFloat(qs('#f_desc').value||0),
+        mes: qs('#mes-vigente').value
+      };
+      const res = await apiPost(payload);
+      if (res.ok){ await listarFuncionarios(); limparFormFuncionario(); }
+    }
+    function renderFuncionarios(rows){
+      const tb = qs('#tbody-func');
+      if (!rows || !rows.length){
+        tb.innerHTML = `<tr><td colspan="8" class="text-center text-slate-400">Sem funcionários.</td></tr>`;
+        return;
+      }
+      tb.innerHTML = rows.map((r,idx)=>{
+        const total = Number(r.total||0);
+        return `
+          <tr>
+            <td>${r.id ?? (idx+1)}</td>
+            <td>${r.nome ?? ''}</td>
+            <td class="text-right">${moedaBR(Number(r.salarioAjustado||0))}</td>
+            <td class="text-right">${moedaBR(Number(r.vt||0))}</td>
+            <td class="text-right">${moedaBR(Number(r.vr||0))}</td>
+            <td class="text-right">${moedaBR(total)}</td>
+            <td class="text-right">${r.atualizado ?? '-'}</td>
+            <td class="text-right">
+              <button class="btn btn-ghost text-xs" data-editar="${r.id}">Editar</button>
+              <button class="btn btn-ghost text-xs" data-excluir="${r.id}">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    async function listarFuncionarios(){
+      const res = await apiPost({ action:'listar-funcionarios', mes: qs('#mes-vigente').value });
+      if (res.ok){
+        renderFuncionarios(res.rows||[]);
+        qs('#kpi-folha').textContent = moedaBR(Number(res.kpiFolha||0));
+      }
+    }
+
+    /* ===== Inicialização ===== */
+    async function init(){
+      initTabs();
+      bindCalculoPrevia();
+      calcularPreviaFuncionario();
+
+      qs('#btn-salvar-func').addEventListener('click', salvarFuncionario);
+      qs('#btn-limpar-func').addEventListener('click', limparFormFuncionario);
+
+      qs('#btn-replicar-fixas').addEventListener('click', ()=>apiPost({action:'replicar-fixas', mes:qs('#mes-vigente').value}));
+      qs('#btn-replicar-func').addEventListener('click', ()=>apiPost({action:'replicar-funcionarios', mes:qs('#mes-vigente').value}));
+      qs('#btn-replicar-cred').addEventListener('click', ()=>apiPost({action:'replicar-creditos-pendentes', mes:qs('#mes-vigente').value}));
+      qs('#btn-replicar-imp').addEventListener('click', ()=>apiPost({action:'replicar-imp-parcelados', mes:qs('#mes-vigente').value}));
+      qs('#btn-gerar-resumo').addEventListener('click', ()=>apiPost({action:'gerar-resumo', mes:qs('#mes-vigente').value}));
+
+      qs('#btn-recarregar').addEventListener('click', ()=>location.reload());
+      qs('#btn-abrir-planilha').addEventListener('click', (e)=>{e.preventDefault(); /* substituído no ping se back enviar URL */});
+
+      const ok = await ping();
+      if (ok) await listarFuncionarios();
+    }
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
